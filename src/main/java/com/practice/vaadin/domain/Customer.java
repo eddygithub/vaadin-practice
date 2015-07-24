@@ -1,22 +1,25 @@
-package com.practice.vaadin.ui.main;
+package com.practice.vaadin.domain;
 
-import java.sql.Date;
+import java.util.Date;
 
-public class Person {
+import org.springframework.data.annotation.Id;
 
-	private int id = -1;
-	private String firstName = "";
-	private String lastName = "";
-	private String phoneNumber = "";
-	private String email = "";
-	private Date dateOfBirth = null;
-	private String comments = "";
+public class Customer {
 
-	public int getId() {
+	@Id
+	private String id;
+	private String firstName;
+	private String lastName;
+	private String phoneNumber;
+	private String email;
+	private Date dateOfBirth;
+	private String comments;
+
+	public String getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 

@@ -33,6 +33,7 @@ repositories {
 
 dependencies {
     compile("com.vaadin:vaadin-spring-boot-starter:1.0.0.beta3")
+	compile("org.springframework.boot:spring-boot-starter-data-mongodb")
     testCompile("org.springframework.boot:spring-boot-starter-test") 
 }
 

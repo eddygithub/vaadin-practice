@@ -1,11 +1,10 @@
 package com.practice.vaadin.ui;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.practice.vaadin.data.services.IBackend;
-import com.practice.vaadin.ui.main.Person;
+import com.practice.vaadin.domain.Customer;
+import com.practice.vaadin.persistent.services.DataStoreService;
 import com.vaadin.data.Property;
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.fieldgroup.FieldGroup;
@@ -17,12 +16,9 @@ import com.vaadin.spring.annotation.SpringUI;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Component;
-import com.vaadin.ui.DateField;
 import com.vaadin.ui.GridLayout;
 import com.vaadin.ui.HorizontalLayout;
 import com.vaadin.ui.Table;
-import com.vaadin.ui.TextArea;
-import com.vaadin.ui.TextField;
 import com.vaadin.ui.UI;
 import com.vaadin.ui.VerticalLayout;
 
@@ -30,25 +26,27 @@ import com.vaadin.ui.VerticalLayout;
 public class ApplicationUI extends UI {
 	private static final long serialVersionUID = 1L;
 
-	private GridLayout form;
 	private Table table;
 	private HorizontalLayout tableControls;
 	private HorizontalLayout formControls;
 	
+	@Qualifier("mongoDataStore")
 	@Autowired
-	private IBackend backend;
+	private DataStoreService dataStore;
+
 	private FieldGroup fieldGroup = new FieldGroup();
+	private GridLayout form = new CustomerFormUI(fieldGroup, false);
+	private Button delete;
 	
 	@Override
 	protected void init(VaadinRequest request) {
-		
 		VerticalLayout  mainLayout = new VerticalLayout();
 		mainLayout.setSpacing(true);
 		mainLayout.setMargin(true);
 
 		mainLayout.addComponent(buildTableControls());
 		mainLayout.addComponent(buildTable());
-		mainLayout.addComponent(buildForm());
+		mainLayout.addComponent(form);
 		mainLayout.addComponent(buildFormControls());
 		setContent(mainLayout);
 	}
@@ -58,17 +56,18 @@ public class ApplicationUI extends UI {
 	    tableControls = new HorizontalLayout();
 	    Button add = new Button("Add", new Button.ClickListener() {
 	        public void buttonClick(ClickEvent event) {
-	            editPerson(new Person());
+	            editPerson(new Customer());
+	            form.setVisible(true);
 	        }
 	    });
 	    
-	    Button delete = new Button("Delete", new Button.ClickListener() {
+	    delete = new Button("Delete", new Button.ClickListener() {
 	        public void buttonClick(ClickEvent event) {
-	            backend.deletePerson((Person) table.getValue());
+	            dataStore.deletePerson((Customer) table.getValue());
 	            updateTableData();
 	        }
 	    });
-	    
+	    delete.setEnabled(false);
 	    tableControls.addComponent(add);
 	    tableControls.addComponent(delete);
 	    return tableControls;
@@ -76,36 +75,35 @@ public class ApplicationUI extends UI {
 
 	private Component buildTable(){
 		table = new Table(null);
-		table.setWidth(500F, Unit.PIXELS);
 		table.setSelectable(true);
 		table.setImmediate(true);
-		
+		table.setSizeFull();
 		table.addValueChangeListener(new Property.ValueChangeListener() {
 			private static final long serialVersionUID = 1L;
-
 			@Override
 			public void valueChange(ValueChangeEvent event) {
-				editPerson((Person)table.getValue());
+				editPerson((Customer)table.getValue());
+				delete.setEnabled(true);
+				form.setVisible(true);
 			}
 		});
+		
 		updateTableData();
 		return table;
 	}
 	
-	private void editPerson(Person person) {
+	private void editPerson(Customer person) {
 	    if (person == null) {
-	        person = new Person();
+	        person = new Customer();
 	    }
-	    BeanItem<Person> item = new BeanItem<Person>(person);
+	    BeanItem<Customer> item = new BeanItem<Customer>(person);
 	    fieldGroup.setItemDataSource(item);
 	}
 	
 	private void updateTableData() {
-		List<Person> persons = backend.getPersons();
-		BeanItemContainer<Person> container = new BeanItemContainer<Person>(
-				Person.class, persons);
+		BeanItemContainer<Customer> container = new BeanItemContainer<Customer>(Customer.class, dataStore.getPersons());
 		table.setContainerDataSource(container);
-
+		
 		table.setVisibleColumns("firstName", "lastName", "phoneNumber", "email", "dateOfBirth");
 		table.setColumnHeaders("First name", "Last name", "Phone number", "E-mail address", "Date of birth");
 		table.sort(new Object[] { "firstName", "lastName" }, new boolean[] {true, true });
@@ -119,7 +117,7 @@ public class ApplicationUI extends UI {
 			public void buttonClick(ClickEvent event) {	
 				try{
 					fieldGroup.commit();
-					backend.storePerson(((BeanItem<Person>)fieldGroup.getItemDataSource()).getBean());
+					dataStore.storePerson(((BeanItem<Customer>)fieldGroup.getItemDataSource()).getBean());
 					updateTableData();
 					editPerson(null);
 				}
@@ -140,30 +138,4 @@ public class ApplicationUI extends UI {
 	    formControls.addComponent(discard);
 	    return formControls;
 	}
-	
-	private Component buildForm() {
-        form = new GridLayout(2, 3);
-
-        TextField firstName = new TextField("First name:");
-        TextField lastName = new TextField("Last name:");
-        TextField phoneNumber = new TextField("Phone Number:");
-        TextField email = new TextField("E-mail address:");
-        DateField dateOfBirth = new DateField("Date of birth:");
-        TextArea comments = new TextArea("Comments:");
-
-        fieldGroup.bind(firstName, "firstName");
-        fieldGroup.bind(lastName, "lastName");
-        fieldGroup.bind(phoneNumber, "phoneNumber");
-        fieldGroup.bind(email, "email");
-        fieldGroup.bind(dateOfBirth, "dateOfBirth");
-        fieldGroup.bind(comments, "comments");
-        
-        form.addComponent(firstName);
-        form.addComponent(lastName);
-        form.addComponent(phoneNumber);
-        form.addComponent(email);
-        form.addComponent(dateOfBirth);
-        form.addComponent(comments);
-        return form;
-    }
 }
