@@ -44,6 +44,7 @@ public class ApplicationUI extends UI {
 		mainLayout.setSpacing(true);
 		mainLayout.setMargin(true);
 
+		mainLayout.addComponent(new MenuBarUI());
 		mainLayout.addComponent(buildTableControls());
 		mainLayout.addComponent(buildTable());
 		mainLayout.addComponent(form);
@@ -88,6 +89,8 @@ public class ApplicationUI extends UI {
 			}
 		});
 		
+		table.setColumnFooter("firstName", "");
+		table.setFooterVisible(true);
 		updateTableData();
 		return table;
 	}
