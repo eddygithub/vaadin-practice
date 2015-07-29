@@ -1,6 +1,5 @@
 package com.practice.vaadin.ui;
 
-import com.vaadin.ui.Label;
 import com.vaadin.ui.MenuBar;
 
 public class MenuBarUI extends MenuBar {

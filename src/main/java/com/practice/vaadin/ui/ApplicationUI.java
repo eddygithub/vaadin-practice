@@ -11,8 +11,10 @@ import com.vaadin.data.fieldgroup.FieldGroup;
 import com.vaadin.data.fieldgroup.FieldGroup.CommitException;
 import com.vaadin.data.util.BeanItem;
 import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.server.ExternalResource;
 import com.vaadin.server.VaadinRequest;
 import com.vaadin.spring.annotation.SpringUI;
+import com.vaadin.ui.BrowserFrame;
 import com.vaadin.ui.Button;
 import com.vaadin.ui.Button.ClickEvent;
 import com.vaadin.ui.Component;
@@ -40,7 +42,13 @@ public class ApplicationUI extends UI {
 	
 	@Override
 	protected void init(VaadinRequest request) {
+		BrowserFrame browser = new BrowserFrame("Browser",
+				new ExternalResource("http://www.prudentcpa.com"));
+		browser.setWidth("600px");
+		browser.setHeight("400px");
+
 		VerticalLayout  mainLayout = new VerticalLayout();
+		mainLayout.addComponent(browser);
 		mainLayout.setSpacing(true);
 		mainLayout.setMargin(true);
 
